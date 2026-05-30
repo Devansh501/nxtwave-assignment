@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: task-tracker-db
+    container_name: task_tracker
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
