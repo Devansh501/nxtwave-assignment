@@ -1,5 +1,6 @@
 package com.nxtwave.entity;
 
+import com.nxtwave.enums.TaskPriority;
 import com.nxtwave.enums.TaskStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,7 +28,12 @@ public class Task {
     @Column(nullable = false)
     private String title;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TaskPriority priority;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -46,17 +47,47 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler({UnauthorizedAccessException.class, AccessDeniedException.class})
+    @ExceptionHandler({
+            UnauthorizedAccessException.class,
+            org.springframework.security.access.AccessDeniedException.class,
+            AuthorizationDeniedException.class
+    })
     public ResponseEntity<ErrorResponse> handleUnauthorizedException(Exception ex) {
         log.warn("Access Denied: {}", ex.getMessage());
 
         ErrorResponse response = ErrorResponse.builder()
                 .status(HttpStatus.FORBIDDEN.value())
                 .code("FORBIDDEN_ACCESS")
-                .message(ex.getMessage() != null ? ex.getMessage() : "You do not have permission to perform this action")
+                .message("You do not have permission to perform this action")
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(org.springframework.security.authentication.BadCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleBadCredentialsException(Exception ex) {
+        log.warn("Failed Login Attempt: Bad Credentials");
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .code("UNAUTHORIZED")
+                .message("Invalid username or password")
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException ex) {
+        log.warn("Bad Request: {}", ex.getMessage());
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .code("BAD_REQUEST")
+                .message(ex.getMessage())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
